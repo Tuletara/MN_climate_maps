@@ -1,48 +1,12 @@
-# Import packages
-import arcpy
-from arcpy.sa import *
-import os
-
-
-Symbology
-# https://pro.arcgis.com/en/pro-app/latest/arcpy/mapping/uniquevaluerenderer-class.htm
-
-# This applies symbology from another layer that must be stored 
-
-# Apply symbology from layer
-
-arcpy.env.workspace = r"C:\Users\mmMary\Documents\8990\T\LAYERS\symbology\precip"
-
-ppt_monthly = r"C:\Users\mmMary\Documents\8990\T\LAYERS\Layer_Styles\ppt_monthly.shp"
-# ann_style = r"C:\Users\mmMary\Documents\8990\Layers\Symbology_Layers\ppt_ann_style.shp"
-
-featureclasses = arcpy.ListFeatureClasses()
-
-for fc in featureclasses:
-    if fc.endswith("_ann_bil.shp"):
-        arcpy.management.ApplySymbologyFromLayer(fc, "ppt_ann_style", 
-                                         "VALUE_FIELD ContourMin ContourMin", "MAINTAIN")
-    else:
-#         print(fc)
-        arcpy.management.ApplySymbologyFromLayer(fc, "ppt_monthly", 
-                                         "VALUE_FIELD ContourMin ContourMin", "MAINTAIN")
-
-
-
-
-
-
-
-
-
 # Import packages & set workspace
-import arcpy
+import os
 import requests as r
 from zipfile import ZipFile
 
+import arcpy
+from arcpy.sa import *
+
 arcpy.env.workspace = r'C:\Users\mmMary\Documents\8990\Map\Weather_Map.aprx'
-
-
 
 # Generate list for pulling all monthly & annual variables for normals
 
@@ -399,11 +363,59 @@ def MN_clip(climate_variable):
                 
 MN_clip("precip")
 
- feature_classes = arcpy.ListFeatureClasses()
-    for fc in feature_classes:
+# This applies symbology from another layer that must be stored 
 
+# Apply symbology from layer
 
+arcpy.env.workspace = r"C:\Users\mmMary\Documents\8990\T\LAYERS\symbology\precip"
 
+ppt_ann_style = r"C:\Users\mmMary\Documents\8990\Layers\Symbology_Layers\ppt_ann_style.shp"
+ppt_monthly = r"C:\Users\mmMary\Documents\8990\T\LAYERS\Layer_Styles\ppt_monthly.shp"
 
+featureclasses = arcpy.ListFeatureClasses()
 
+for fc in featureclasses:
+    if fc.endswith("_ann_bil.shp"):
+        arcpy.management.ApplySymbologyFromLayer(fc, "ppt_ann_style", 
+                                         "VALUE_FIELD ContourMin ContourMin", "MAINTAIN")
+    else:
+#         print(fc)
+        arcpy.management.ApplySymbologyFromLayer(fc, "ppt_monthly", 
+                                         "VALUE_FIELD ContourMin ContourMin", "MAINTAIN")
+    
+# https://pro.arcgis.com/en/pro-app/latest/arcpy/mapping/uniquevaluerenderer-class.htm
 
+import os
+aprx = arcpy.mp.ArcGISProject(r"C:\Users\mmMary\Documents\8990\Map\Weather_Map\Weather_Map.aprx")
+
+# Update these parameters each instance for proper naming convention.
+# !! Failing to do will overwrite the last file !!
+climate_variable = "ppt"
+time = "01"
+
+# Output_File = os.path.join(r"C:\Users\mmMary\Documents\8990\Static_Maps", climate_variable, climate_variable + "_" + time) 
+
+Output_File = os.path.join(r"C:\Users\mmMary\Desktop\8990", climate_variable, climate_variable + "_" + time + ".jpg") 
+m = aprx.listMaps("Print")[0]
+lyt = aprx.listLayouts("Layout")[0]
+lyt.exportToJPEG(Output_File) #, width=1000, height=1000, world_file=True) 
+
+# THIS is getting close but still not quite correct. Still working on it
+import arcpy, os
+
+aprx = arcpy.mp.ArcGISProject('current')
+mv = aprx.activeView
+
+# Loop thru all layers in mapframe
+layers = m.listLayers()
+
+for l in layers:
+    # Get layer as string for filename
+    l_name = str(l)
+    
+    # Export the map view
+    Output_File = os.path.join(r"C:\Users\mmMary\Documents\8990\Static_Maps\testing", l_name) 
+    mv.exportToJPEG(Output_File, width=1000, height=1000, world_file=True)
+    
+    print(Output_File + " is now an image")
+#     print(l)
